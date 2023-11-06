@@ -9,14 +9,85 @@ import MiddleLeader from "./MiddleLeader";
 import { ThemeContext } from "./App";
 import { useContext, useState, useEffect } from "react";
 import { BrowserRouter,Routes, Route } from "react-router-dom";
+import { Dimensions } from 'react-native';
 
-function PageRender({socket,gameState,modifyCurrUserData,currUserData,declareVictor,knownUsers,leaderboard}){
+const windowDimensions = Dimensions.get('window');
+const screenDimensions = Dimensions.get('screen');
+
+function PageRender({modifyChallengeState,socket,gameState,modifyCurrUserData,currUserData,declareVictor,knownUsers,leaderboard,challengeState}){
+
+  const [dimensions, setDimensions] = useState({window:windowDimensions,screen:screenDimensions})
+
+  useEffect(()=>{
+    const subscription = Dimensions.addEventListener("change",({window,screen})=>{setDimensions({window,screen})})
+    return () => subscription?.remove()
+  },[dimensions])
+
+  function showLocalLeader(){
+    if(dimensions.window.width > 1599){
+      return(
+        <div className={"second"+theme}>
+          <MiddleLeader leaderboard={leaderboard} currUserData={currUserData}/>
+        </div>
+      )
+    }else{
+      return <></>
+    }
+  }
 
   function getUsers(){
     if(Array.isArray(knownUsers)){
-      return knownUsers.map(user=>{return <UserCard key={user.id} id={user.id} username={user.username} userColor={user.userColor} socket={socket} currUserData={currUserData}/>})
+      return knownUsers.map(user=>{if(user.id !== currUserData.id){return <UserCard key={user.id} id={user.id} username={user.username} userColor={user.userColor} socket={socket} currUserData={currUserData} challengeState={challengeState}/>}})
     }else{
       return <></>
+    }
+  }
+
+  function declineChallenge(e){
+    socket.emit("message",{"message_type":4,"data":{internalId:3,challenger:challengeState.challengeData.challenger}})
+    modifyChallengeState(false)
+  }
+
+  function acceptChallenge(e){
+    socket.emit("message",{"message_type":4,"data":{internalId:1,challenger:challengeState.challengeData.challenger,challenged:challengeState.challengeData.challenged,colorInfo:currUserData.settings.gameColors}})
+    modifyChallengeState(false)
+  }
+
+  function showAcceptance(){
+    if(challengeState.response){
+      return(
+        <p>{challengeState.challengedData.username} declined!</p>
+      )
+    }
+  }
+
+  useEffect(()=>{
+    if(challengeState.response){
+      setTimeout(function(){
+        modifyChallengeState(false)
+      },5000)
+    }
+  },[challengeState])
+
+  function showChallenge(){
+    if(challengeState){
+      if(challengeState.challengeData.challenged === currUserData.id){
+        return(
+          <div className={"challenge"+theme}>
+            <p>{challengeState.challengerData.username} is Challenging you!</p>
+            <button onClick={acceptChallenge}>Accept</button><button onClick={declineChallenge}>Decline</button>
+          </div>
+        )
+      }else if(challengeState.challengeData.challenger === currUserData.id){
+        return(
+          <div className={"challenge"+theme}>
+            <p>Waiting on {challengeState.challengedData.username}'s response</p>
+            {showAcceptance()}
+          </div>
+        )
+      }
+    }else{
+      return(<></>)
     }
   }
 
@@ -26,16 +97,14 @@ return (
     <div>
       <BrowserRouter>
         <div className={"header"+theme}>
-          <h1>Battleship Online (Title Pending)</h1>
+          <h1>Peer-to-Board Battleship</h1>
           <NavBar currUserData={currUserData}/>
         </div>
-        <div className="emptyspace"></div>
+        {showChallenge()}
         <div className={"activeusers"+theme}>
           {getUsers()}
         </div>
-        <div className={"second"+theme}>
-          <MiddleLeader leaderboard={leaderboard} currUserData={currUserData}/>
-        </div>
+        {showLocalLeader()}
         <div className={"main"+theme}>
           <Routes>
               <Route path="/" element={<Game gameState={gameState} socket={socket} currUserData={currUserData} declareVictor={declareVictor} knownUsers={knownUsers}/>}/>

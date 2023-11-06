@@ -10,6 +10,7 @@ from flask_socketio import emit, SocketIO,send
 # Local imports
 from config import app, db, api
 from models import User, Game, Victory, Ranking
+import math
 # Add your model imports
 
 socketio = SocketIO(app,cors_allowed_origins="*")
@@ -136,26 +137,46 @@ class VictoryList(Resource):
     def post(self):
         data = request.get_json()
         try:
-            victory_hold = Victory(
-                victor = data["victor"],
-                loser = data["loser"],
-                game_id = data["game_id"],
-                rating_gain = 10,
-                rating_loss = -10
-            )
             victor_hold = Ranking.query.filter_by(id=data["victor"]).one_or_none()
             loser_hold = Ranking.query.filter_by(id=data["loser"]).one_or_none()
             if not victor_hold or not loser_hold:
                 return make_response("Failed to find users in fight",404)
-            setattr(victor_hold,"rating",victor_hold.rating+10)
-            setattr(loser_hold,"rating",loser_hold.rating-10)
+            rating_dif = abs(victor_hold.rating-loser_hold.rating)
+            victor_rating_gain = 0
+            loser_rating_loss = 0
+            victor_higher_rating = victor_hold.rating > loser_hold.rating
+
+            if victor_higher_rating:
+                victor_rating_gain = int(rating_dif * ((math.sqrt(rating_dif)/pow(rating_dif,2)) * 10))
+                loser_rating_loss = int(rating_dif * ((math.sqrt(2*rating_dif)/pow(rating_dif,2)) * 30))
+            else:
+                if rating_dif == 0:
+                    rating_dif = 1
+                    victor_rating_gain = int(rating_dif * (math.sqrt(pow(rating_dif,1.6))/rating_dif)+ 10)
+                    loser_rating_loss = int(((math.sqrt(2*rating_dif)/pow(rating_dif,2)) * 30)/2)
+                else:
+                    victor_rating_gain = int(rating_dif * (math.sqrt(pow(rating_dif,1.6))/rating_dif)+ 10)
+                    loser_rating_loss = int(pow(rating_dif,0.8))
+            if victor_rating_gain + victor_hold.rating > 999:
+                victor_rating_gain = 999 - victor_hold.rating
+            if loser_rating_loss + loser_hold.rating < 1:
+                loser_rating_loss = loser_hold.rating - 1
+
+            victory_hold = Victory(
+                victor = data["victor"],
+                loser = data["loser"],
+                game_id = data["game_id"],
+                rating_gain = victor_rating_gain,
+                rating_loss = loser_rating_loss * -1
+            )
+            setattr(victor_hold,"rating",victor_hold.rating+victor_rating_gain)
+            setattr(loser_hold,"rating",loser_hold.rating-loser_rating_loss)
+
 
             db.session.add(victory_hold)
             db.session.add(victor_hold)
             db.session.add(loser_hold)
             db.session.commit()
-
-            send({"message_type":5,"data":1},broadcast=True)
 
             return make_response(victory_hold.to_dict(),201)
         except:

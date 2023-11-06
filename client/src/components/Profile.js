@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
+import BoardRow from "./BoardRow"
 
 function Profile({currUserData,modifyCurrUserData,socket}){
     const navigate = useNavigate()
@@ -111,60 +112,89 @@ function Profile({currUserData,modifyCurrUserData,socket}){
         updateServerInfo(newData)
     }
 
+    const ShipsSettings = [
+    
+        [0,0,0,0,0,1,2,2,2,1],
+        [0,3,0,0,0,1,1,1,1,1],
+        [0,0,2,2,2,2,2,1,1,2],
+        [0,0,3,0,0,1,1,1,1,2],
+        [0,0,4,0,0,1,1,1,1,1],
+        [0,0,4,0,3,1,2,1,1,1],
+        [0,0,3,0,0,1,2,1,1,1],
+        [0,0,2,2,2,3,4,3,1,3],
+        [0,0,0,0,0,1,4,1,1,1],
+        [0,3,0,2,2,1,3,1,1,1],
+
+    ]
+
+    function renderBoardSettings(){
+        let rowPos = 0
+        return ShipsSettings.map((rowData)=>{
+            rowPos += 1
+            return <BoardRow board={1} rowData={rowData} rowPos={rowPos} key={rowPos} colorSet={colorSetting} forSettings={true}/>
+        })
+    }
+
     function safteyCheck(){
         if(currUserData !== "") {
             return (
-                <div className="setting-org">
-                    <div>
-                        <h2>Personalization Settings:</h2>
-                        <a>Dark Mode:</a><input onChange={changeDarkMode} checked={currUserData.settings.darkMode} type="checkbox"/>
-                        <h3>Square Colors:</h3>
-                        <a>Active Square:</a><input type="color" name="active" onChange={changeGameColors} value={colorSetting.active}/>
-                        <br></br>
-                        <br></br>
-                        <a>Inactive Square:</a><input type="color" name="inactive" onChange={changeGameColors} value={colorSetting.inactive}/>
-                        <br></br>
-                        <br></br>
-                        <a>Placed Square:</a><input type="color" name="placed" onChange={changeGameColors} value={colorSetting.placed}/>
-                        <br></br>
-                        <br></br>
-                        <a>Miss Square:</a><input type="color" name="miss" onChange={changeGameColors} value={colorSetting.miss}/>
-                        <br></br>
-                        <br></br>
-                        <a>Hit Square:</a><input type="color" name="hit" onChange={changeGameColors} value={colorSetting.hit}/>
-                        <br></br>
-                        <br></br>
-                        <a>Username Color:</a><input type="color" name="text" onChange={changeGameColors} value={colorSetting.text}/>
-                        <br></br>
-                        <br></br>
-                        <a>Background Color:</a><input type="color" name="background" onChange={changeGameColors} value={colorSetting.background}/>
-                        <br></br>
-                        <br></br>
-                        <a>Show Opponents Colors:</a><input onChange={changeOpponentColorMode} checked={currUserData.settings.opponentColors} type="checkbox"/>
-                        <br></br>
-                        <br></br>
-                        <button onClick={submitColor}>Submit Color Changes</button>
-                        <br></br>
-                        <button onClick={resetColor}>Reset Color Changes</button>
-                        <br></br>
-                        <button onClick={resetColorDefault}>Default Colors</button>
+                <div>
+                    <div style={{backgroundColor:colorSetting.background}} className="board-background-settings">
+                        {renderBoardSettings()}
+                        <p style={{color:colorSetting.text}}>{currUserData.username}</p>
                     </div>
-                    <div>
-                        <form onSubmit={handleSubmit}>
-                            <h3>Modify Log in info:</h3>
-                            <input type="text" autoComplete="off" placeholder="Username" onChange={handleChanged} name="username" value={formHold.username}/>
+                    <div className="setting-org">
+                        <div>
+                            <h2>Personalization Settings:</h2>
+                            <a>Dark Mode:</a><input onChange={changeDarkMode} checked={currUserData.settings.darkMode} type="checkbox"/>
+                            <h3>Square Colors:</h3>
+                            <a>Active Square:</a><input type="color" name="active" onChange={changeGameColors} value={colorSetting.active}/>
                             <br></br>
-                            <input type="password" autoComplete="off" placeholder="Password" onChange={handleChanged} name="password" value={formHold.password}/>
                             <br></br>
-                            <button>Submit</button>
-                        </form>            
-                    </div>
-                    <br></br>
-                    <div>
-                        <button onClick={handleClick}>Log out</button>
+                            <a>Inactive Square:</a><input type="color" name="inactive" onChange={changeGameColors} value={colorSetting.inactive}/>
+                            <br></br>
+                            <br></br>
+                            <a>Placed Square:</a><input type="color" name="placed" onChange={changeGameColors} value={colorSetting.placed}/>
+                            <br></br>
+                            <br></br>
+                            <a>Miss Square:</a><input type="color" name="miss" onChange={changeGameColors} value={colorSetting.miss}/>
+                            <br></br>
+                            <br></br>
+                            <a>Hit Square:</a><input type="color" name="hit" onChange={changeGameColors} value={colorSetting.hit}/>
+                            <br></br>
+                            <br></br>
+                            <a>Username Color:</a><input type="color" name="text" onChange={changeGameColors} value={colorSetting.text}/>
+                            <br></br>
+                            <br></br>
+                            <a>Background Color:</a><input type="color" name="background" onChange={changeGameColors} value={colorSetting.background}/>
+                            <br></br>
+                            <br></br>
+                            <a>Show Opponents Colors:</a><input onChange={changeOpponentColorMode} checked={currUserData.settings.opponentColors} type="checkbox"/>
+                            <br></br>
+                            <br></br>
+                            <button onClick={submitColor}>Submit Color Changes</button>
+                            <br></br>
+                            <button onClick={resetColor}>Reset Color Changes</button>
+                            <br></br>
+                            <button onClick={resetColorDefault}>Default Colors</button>
+                        </div>
+                        <div>
+                            <form onSubmit={handleSubmit}>
+                                <h3>Modify Log in info:</h3>
+                                <input type="text" autoComplete="off" placeholder="Username" onChange={handleChanged} name="username" value={formHold.username}/>
+                                <br></br>
+                                <input type="password" autoComplete="off" placeholder="Password" onChange={handleChanged} name="password" value={formHold.password}/>
+                                <br></br>
+                                <button>Submit</button>
+                            </form>            
+                        </div>
                         <br></br>
-                        <br></br>
-                        <button onClick={handleDelete}>Delete Account</button>
+                        <div>
+                            <button onClick={handleClick}>Log out</button>
+                            <br></br>
+                            <br></br>
+                            <button onClick={handleDelete}>Delete Account</button>
+                        </div>
                     </div>
                 </div>
             )

@@ -60,10 +60,10 @@ function BoardRender({socket,gameState,currUserData,declareVictor,knownUsers}){
     useEffect(()=>{
         if(gameState.gamePhase === 3){
             if(gameState.player1hits === hitsNeeded && localGameData.boardNum === 1){
-                declareVictor(gameState.player1id,gameState.player2id)
+                declareVictor(gameState.player1id,gameState.player2id,gameState.gameId)
                 setLocalGameData(initdata10x10)
             }else if(gameState.player2hits === hitsNeeded && localGameData.boardNum === 2){
-                declareVictor(gameState.player2id,gameState.player1id)
+                declareVictor(gameState.player2id,gameState.player1id,gameState.gameId)
                 setLocalGameData(initdata10x10)
             }else{
                 console.log("You Lost")
@@ -260,9 +260,16 @@ function BoardRender({socket,gameState,currUserData,declareVictor,knownUsers}){
     function handleBoardColor(board){
         if(gameState.gameId !== 0){
             if(currUserData.settings.opponentColors === false || currUserData.settings.opponentColors === undefined){
-                return {
-                    backgroundColor:currUserData.settings.gameColors.background,
-                    color:currUserData.settings.gameColors.text
+                if(board === 1){
+                    return{
+                        backgroundColor:currUserData.settings.gameColors.background,
+                        color:gameState.player1colors.text
+                    }
+                }else{
+                    return {
+                        backgroundColor:currUserData.settings.gameColors.background,
+                        color:gameState.player2colors.text
+                    }
                 }
             }else if(board === 1){
                 return {

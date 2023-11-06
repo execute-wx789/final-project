@@ -56,6 +56,7 @@ function App() {
   const [knownUsers,setKnownUsers] = useState([])
   const [theme,setTheme] = useState(false)
   const [leaderboard,setLeaderboard] = useState([])
+  const [challengeState,setChallengeState] = useState(false)
 
   useEffect(()=>{
       fetch("/rankings")
@@ -123,30 +124,47 @@ function App() {
     setKnownUsers(data)
   }
 
+  function modifyChallengeState(data){
+    setChallengeState(data)
+  }
+
   function processChallenge(data){
     let knowsChallenger = false
     let extraChallengerInfo = {}
+    let extraChallengedInfo = {}
     if(data.challenged !== currUserData.id){
       return
     }
+    if(gameState.gameId !== 0){
+      socket.emit("message",{"message_type":4,"data":{internalId:5,challenger:data.challenger}})
+      return
+    }
+    if(challengeState !== false){
+      socket.emit("message",{"message_type":4,"data":{internalId:4,challenger:data.challenger}})
+      return
+    }
     knownUsers.forEach((user)=>{
-      if (user.id === data.challenger) {
+      if(user.id === data.challenger){
         knowsChallenger = true
         extraChallengerInfo = user
+      }else if(user.id === data.challenged){
+        extraChallengedInfo = user
       }
     })
     if(knowsChallenger){
-      let acceptance = prompt(`${extraChallengerInfo.username} is Challenging You, type A to accept!`)
-      if(acceptance === null){
-        acceptance = "b"
-      }
-      if(acceptance.toLowerCase() === "a"){
-        socket.emit("message",{"message_type":4,"data":{internalId:1,challenger:data.challenger,challenged:data.challenged,colorInfo:currUserData.settings.gameColors}})
-      }else{
-        socket.emit("message",{"message_type":4,"data":{internalId:3}})
-      }
+      socket.emit("message",{"message_type":4,"data":{internalId:6,challenger:data.challenger,responsePacket:{challengerData:extraChallengerInfo,challengedData:extraChallengedInfo,challengeData:data}}})
+      modifyChallengeState({challengerData:extraChallengerInfo,challengedData:extraChallengedInfo,challengeData:data})
+      // let acceptance = prompt(`${extraChallengerInfo.username} is Challenging You, type A to accept!`)
+      // if(acceptance === null){
+      //   acceptance = "b"
+      // }
+      // if(acceptance.toLowerCase() === "a"){
+      //   socket.emit("message",{"message_type":4,"data":{internalId:1,challenger:data.challenger,challenged:data.challenged,colorInfo:currUserData.settings.gameColors}})
+      // }else{
+      //   socket.emit("message",{"message_type":4,"data":{internalId:3}})
+      // }
     }else{
-      socket.emit("message",{"message_type":4,"data":{internalId:2}})
+      socket.emit("message",{"message_type":4,"data":{internalId:2,challenger:data.challenger}})
     }
   }
 
@@ -167,11 +185,18 @@ function App() {
       }else if(msg.message_type === 4){
         if (msg.data.challenger === currUserData.id) {
           if(msg.data.internalId === 2){
-            console.log("Failure to start game")
+            console.log("Challenged Player doesn't know you!")
           }else if(msg.data.internalId === 3){
-            console.log("Player Challenged refused!")
+            modifyChallengeState({...challengeState,response:true})
+          }else if(msg.data.internalId === 4){
+            console.log("Player arleady Challenged!")
+          }else if(msg.data.internalId === 5){
+            console.log("Player arleady in game!")
           }else if(msg.data.internalId === 1){
             initGame(msg.data.challenged,msg.data.challenger,msg.data.colorInfo)
+            modifyChallengeState(false)
+          }else if(msg.data.internalId === 6){
+            modifyChallengeState({...msg.data.responsePacket,response:false})
           }
         }
       }else if(msg.message_type === 5){
@@ -198,14 +223,19 @@ function App() {
     function  socketConnectFunc(){
       socket.emit("message",{"message_type":2,"data":{id:currUserData.id,username:currUserData.username,userColor:currUserData.settings.gameColors.text}})
     }
+    function socketDisconnectFunc(){
+      processKnownUsers([])
+    }
 
     socket.on("message",socketMessageFunc)
     socket.on("connect",socketConnectFunc)
+    socket.on("disconnect",socketDisconnectFunc)
     return ()=>{
       socket.off("message",socketMessageFunc)
       socket.off("connect",socketConnectFunc)
+      socket.off("disconnect",socketDisconnectFunc)
     }
-  },[gameState,currUserData,knownUsers])
+  },[gameState,currUserData,knownUsers,challengeState])
 
   // const getSocketState = ()=>{
   //   socket.on("message",msg=>{
@@ -235,9 +265,9 @@ function App() {
   //   })
   // }
 
-  function declareVictor(victorId,loserId){
+  function declareVictor(victorId,loserId,gameId){
     console.log(`You Won ${victorId}`)
-    fetch("/victories",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({victor:victorId,loser:loserId,game_id:gameState.gameId})})
+    fetch("/victories",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({victor:victorId,loser:loserId,game_id:gameId})})
     .catch(e=>console.log(e))
     fetch(`/games/${gameState.gameId}`,{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({status:"Over",victor:victorId})})
     .catch(e=>console.log(e))
@@ -245,11 +275,12 @@ function App() {
     newData.gameId = 0
     setGameState(initdata10x10)
     socket.emit("message",{"message_type":1,"data":newData})
+    socket.emit("message",{"message_type":5,"data":1})
   }
 
   return (
     <ThemeContext.Provider value={theme}>
-      <PageRender leaderboard={leaderboard} knownUsers={knownUsers} gameState={gameState} socket={socket} currUserData={currUserData} modifyCurrUserData={modifyCurrUserData} declareVictor={declareVictor}/>
+      <PageRender modifyChallengeState={modifyChallengeState} challengeState={challengeState} leaderboard={leaderboard} knownUsers={knownUsers} gameState={gameState} socket={socket} currUserData={currUserData} modifyCurrUserData={modifyCurrUserData} declareVictor={declareVictor}/>
     </ThemeContext.Provider>
   )
 }
