@@ -109,6 +109,7 @@ function Profile({currUserData,modifyCurrUserData,socket}){
     function resetColorDefault(e){
         const newData = currUserData
         newData.settings.gameColors = initcolorvalue
+        setColorSetting(initcolorvalue)
         updateServerInfo(newData)
     }
 
