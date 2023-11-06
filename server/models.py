@@ -43,6 +43,7 @@ class Game(db.Model, SerializerMixin):
     id = db.Column(db.Integer, primary_key=True)
     status = db.Column(db.String)
     victor = db.Column(db.Integer)
+    turns = db.Column(db.Integer)
 
     challenger_id = db.Column(db.Integer, db.ForeignKey("users.id"))
     challenged_id = db.Column(db.Integer, db.ForeignKey("users.id"))

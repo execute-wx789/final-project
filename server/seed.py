@@ -78,10 +78,11 @@ if __name__ == '__main__':
 
         i = 1
 
-        while i < 40:
+        while i < 350:
 
             challenger_hold = fake.pyint(1,25)
             challenged_hold = fake.pyint(1,25)
+            turns_hold = fake.pyint(59,200)
             if challenged_hold == challenger_hold:
                 if challenger_hold == 25:
                     challenger_hold = challenger_hold - 1
@@ -131,7 +132,8 @@ if __name__ == '__main__':
                 status = "Over",
                 victor = victor_hold,
                 challenger_id = challenger_hold,
-                challenged_id = challenged_hold
+                challenged_id = challenged_hold,
+                turns = turns_hold
             )
 
             gamesAdd.append(game)

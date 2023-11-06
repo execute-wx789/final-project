@@ -23,6 +23,7 @@ function App() {
     "player2colors":{},
     "player1hits":0,
     "player2hits":0,
+    "turns":0,
     "attacks":{
       "board1":[
         [0,0,0,0,0,0,0,0,0,0],
@@ -269,7 +270,7 @@ function App() {
     console.log(`You Won ${victorId}`)
     fetch("/victories",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({victor:victorId,loser:loserId,game_id:gameId})})
     .catch(e=>console.log(e))
-    fetch(`/games/${gameState.gameId}`,{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({status:"Over",victor:victorId})})
+    fetch(`/games/${gameState.gameId}`,{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({status:"Over",victor:victorId,turns:gameState.turns})})
     .catch(e=>console.log(e))
     const newData = gameState
     newData.gameId = 0

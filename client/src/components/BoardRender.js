@@ -7,8 +7,8 @@ import { ThemeContext } from "./App"
 function BoardRender({socket,gameState,currUserData,declareVictor,knownUsers}){
 
     const theme = useContext(ThemeContext)
-    const hitsNeeded = 1 // Value should be 30, only change for debugging purposes
-    const allowed_ships = 1 // Value should be 10, only change for debugging pruposes
+    const hitsNeeded = 30 // Value should be 30, only change for debugging purposes
+    const allowed_ships = 10 // Value should be 10, only change for debugging pruposes
 
     const initdata10x10 = {
         "boardNum":undefined,
@@ -207,11 +207,13 @@ function BoardRender({socket,gameState,currUserData,declareVictor,knownUsers}){
                     const newData = gameState
                     newData.attacks.board1[row-1][col-1] = 1
                     newData.playerTurn = 1
+                    newData.turns += 1
                     socket.emit("message",{"message_type":1,"data":newData})
                 }else{
                     const newData = gameState
                     newData.attacks.board2[row-1][col-1] = 1
                     newData.playerTurn = 2
+                    newData.turns += 1
                     socket.emit("message",{"message_type":1,"data":newData})
                 }
             }

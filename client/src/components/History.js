@@ -10,15 +10,58 @@ function History({currUserData}){
         .then(r=>r.json())
         .then(d=>{
             let history_hold = []
+            let longestGame = {
+                game_id:0,
+                turns:0,
+            }
+            let shortestGame = {
+                game_id:0,
+                turns:201,
+            }
             d.forEach(game => {
                 if(game.challenger_id === parseInt(id)){
                     history_hold.push(game)
+                    if(longestGame.turns < game.turns){
+                        longestGame = {
+                            game_id:game.id,
+                            turns:game.turns
+                        }
+                    }
+                    if(shortestGame.turns > game.turns){
+                        shortestGame = {
+                            game_id:game.id,
+                            turns:game.turns
+                        }
+                    }
                 }
                 if(game.challenged_id === parseInt(id)){
                     history_hold.push(game)
+                    if(longestGame.turns < game.turns){
+                        longestGame = {
+                            game_id:game.id,
+                            turns:game.turns
+                        }
+                    }
+                    if(shortestGame.turns > game.turns){
+                        shortestGame = {
+                            game_id:game.id,
+                            turns:game.turns
+                        }
+                    }
                 }
             })
-            setHistory(history_hold)
+            const return_history = history_hold.map(game => {
+                if(longestGame.game_id === game.id){
+                    let new_return = game
+                    new_return.is_longest = true
+                    return new_return
+                }else if(shortestGame.game_id === game.id){
+                    let new_return = game
+                    new_return.is_shortest = true
+                    return new_return
+                }else{return game}
+            })
+            setHistory(return_history)
         })
         .catch(e=>console.log(e))
     },[id])
@@ -102,8 +145,14 @@ function History({currUserData}){
         return history.map((hist)=>{
             if(hist.status === "Ongoing"){
                 return <p>This battle has yet to end</p>
-            }else if(hist.challenger_id === currUserData.id || hist.challenger_id === currUserData.id){
-                return <p>You were in this Battle!</p>
+            }else if(hist.is_longest){
+                return <p>This was this users longest game</p>
+            }else if(hist.is_shortest){
+                return <p>This was this users shortest game</p>
+            }else if(hist.challenger_id === currUserData.id){
+                return <p>You were the challenger!</p>
+            }else if(hist.challenged_id === currUserData.id){
+                return <p>You were challenged!</p>
             }else{
                 return <p>No Intresting Info</p>
             }
