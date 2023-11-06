@@ -22,7 +22,9 @@ function MiddleLeader({leaderboard,currUserData}){
         leaderboard.forEach((rank)=>{
             pos += 1
             if(posUpper < pos && posLower > pos){
-                localLeader_hold.push(rank)
+                let new_data_hold = rank
+                new_data_hold.pos = pos
+                localLeader_hold.push(new_data_hold)
             }
         })
         setLocalLeaderboard(localLeader_hold)
@@ -47,7 +49,7 @@ function MiddleLeader({leaderboard,currUserData}){
 
     function displayPosition(){
         let pos = 0
-        return localLeaderboard.map(rank=>{pos += 1;return <p>{pos}.</p>})
+        return localLeaderboard.map(rank=>{pos += 1;return <p>{rank.pos}.</p>})
     }
 
     function displayUsername(){

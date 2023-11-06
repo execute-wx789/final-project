@@ -26,7 +26,7 @@ function Profile({currUserData,modifyCurrUserData,socket}){
         if (currUserData !== "") {
             setColorSetting(currUserData.settings.gameColors)   
         }
-    },[currUserData])
+    },[])
 
     function updateServerInfo(data){
         const dataToSend = data

@@ -97,7 +97,7 @@ return (
     <div>
       <BrowserRouter>
         <div className={"header"+theme}>
-          <h1>Peer-to-Board Battleship</h1>
+          <h1>Peer-to-Board ~ Battleship</h1>
           <NavBar currUserData={currUserData}/>
         </div>
         {showChallenge()}
