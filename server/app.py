@@ -89,6 +89,18 @@ class UserByID(Resource):
             return make_response(user_hold.to_dict(rules=("-_pass_hash",)),202)
         except:
             return make_response("Failed to update user",400)
+    def delete(self,id):
+        user_hold = User.query.filter_by(id=id).one_or_none()
+        if not user_hold:
+            return make_response("User not Found",404)
+        db.session.delete(user_hold)
+        db.session.commit()
+        ranking_hold = Ranking.query.filter_by(user_id=id).one_or_none()
+        if not ranking_hold:
+            return make_response("User's Ranking not Found",404)
+        db.session.delete(ranking_hold)
+        db.session.commit()
+        return make_response("Successful Delete",204)
 
 api.add_resource(UserList, "/users")
 api.add_resource(UserByID, "/users/<int:id>")

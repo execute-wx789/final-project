@@ -53,7 +53,13 @@ function MiddleLeader({leaderboard,currUserData}){
     }
 
     function displayUsername(){
-        return localLeaderboard.map(rank=>{return <p>{rank.user.username}</p>})
+        return localLeaderboard.map(rank=>{
+            if(rank.user){
+                return <p>{rank.user.username}</p>
+            }else{
+                return <p>DELETED USER</p>
+            }
+        })
     }
 
     function displayRating(){

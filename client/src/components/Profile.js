@@ -65,6 +65,7 @@ function Profile({currUserData,modifyCurrUserData,socket}){
         fetch("/logout",{method:"DELETE"})
         .then(r=>{
             modifyCurrUserData("")
+            socket.disconnect()
             navigate("/login")
         })
     }

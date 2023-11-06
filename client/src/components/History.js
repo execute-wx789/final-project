@@ -77,9 +77,17 @@ function History({currUserData}){
                 return <p>Undecided</p>
             }else{
                 if(hist.victor === hist.challenged_id){
-                    return <p>{hist.challenged.username}</p>
+                    if(hist.challenged){
+                        return <p>{hist.challenged.username}</p>
+                    }else{
+                        return <p>DELETED USER</p>
+                    }
                 }else if(hist.victor === hist.challenger_id){
-                    return <p>{hist.challenger.username}</p>
+                    if(hist.challenger){
+                        return <p>{hist.challenger.username}</p>
+                    }else{
+                        return <p>DELETED USER</p>
+                    }
                 }
             }
         })
@@ -112,9 +120,17 @@ function History({currUserData}){
                 return <p>Undecided</p>
             }else{
                 if(hist.victor === hist.challenger_id){
-                    return <p>{hist.challenged.username}</p>
+                    if(hist.challenged){
+                        return <p>{hist.challenged.username}</p>
+                    }else{
+                        return <p>DELETED USER</p>
+                    }               
                 }else if(hist.victor === hist.challenged_id){
-                    return <p>{hist.challenger.username}</p>
+                    if(hist.challenger){
+                        return <p>{hist.challenger.username}</p>
+                    }else{
+                        return <p>DELETED USER</p>
+                    }                
                 }
             }
         })

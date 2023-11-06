@@ -102,6 +102,7 @@ return (
         </div>
         {showChallenge()}
         <div className={"activeusers"+theme}>
+          <h4 className="activeusers-name">Online Users</h4>
           {getUsers()}
         </div>
         {showLocalLeader()}
